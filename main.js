@@ -1,6 +1,8 @@
 let request = "https://raw.githubusercontent.com/freeCodeCamp/";
 request += "ProjectReferenceData/master/cyclist-data.json";
 
+const regex = /[confessed|associated|admitted|implicated|payments|high|removed|failed|alleged|drug|positive|testified|doping|illegal|stripped]/;
+
 const margin = {
   top: 20,
   right: 60,
@@ -30,17 +32,17 @@ d3.json(request).then((response) => {
 
 
   // Scales
+  let [min_year, max_year] = d3.extent(years);
+
   let xScale = d3.scaleTime(
-    d3.extent(years),
+    [new Date(min_year.getUTCFullYear() - 2, 0), new Date(max_year.getUTCFullYear() + 2, 0)],
     [0, innerWidth]
   );
-  console.log(xScale.domain())
+
   let yScale = d3.scaleTime(
     d3.extent(times),
     [0, innerHeight]
   );
-
-  console.log(yScale.domain())
 
   // Axes
   let xAxis = d3.axisBottom(xScale);
@@ -52,7 +54,16 @@ d3.json(request).then((response) => {
     .data(response).enter().append("circle")
     .attr("cx", (d, i) => xScale(years[i]))
     .attr("cy", (d, i) => yScale(times[i]))
-    .attr("r", 7);
+    .attr("r", 7)
+    .attr("stroke", "black")
+    .attr("stroke-width", 2)
+    .attr("fill", (d) => {
+      const accusation = d.Doping.toLowerCase();
+      if (regex.test(accusation)) {
+        return "red"
+      }
+      return "green"
+    });
 
 
   xAxis(svg.append("g").attr("transform", `translate(${margin.left}, ${height - margin.bottom})`));
