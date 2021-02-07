@@ -25,9 +25,17 @@ let svg = d3.select(".container").append("svg")
   .attr("class", "svg_box");
 
 let gCircles = svg.append('g')
-  .attr("transform", `translate(${margin.left}, ${margin.top})`);
+  .attr("transform", `translate(${margin.left}, ${margin.top})`)
+  .attr("id", "circle_data");
 
 d3.json(request).then((response) => {
+
+  section.append("h1")
+    .style("margin", 0)
+    .html("Doping in Professional Bicycle Racing")
+  section.append("h2")
+    .style("margin", 0)
+    .html("35 Fastest times up Alpe d'Huez")
 
   let years = response.map((x) => new Date(x.Year, 0));
   let times = years.map((year, i) => {
@@ -79,6 +87,18 @@ d3.json(request).then((response) => {
     .attr("fill", (d) => {
       const accusation = d.Doping.toLowerCase();
       return regex.test(accusation) ? red : blue
+    })
+    .on('mouseenter', function(d) {
+      let tooltip = d3.select(".tooltip");
+      let [xCircle, yCircle] = [event.clientX, event.clientY];
+
+      tooltip.style("top", `${yCircle - 50}px`).style("left", `${xCircle}px`).style('opacity', 0.8);
+      tooltip.html(`${d.Name} - ${d.Nationality}<br />Year ${d.Year} - Time ${d.Time}<br />${d.Doping}`);
+    })
+    .on("mouseout", function() {
+      let tooltip = d3.select(".tooltip");
+      let [xCircle, yCircle] = [event.clientX, event.clientY];
+      tooltip.style('opacity', 0);
     });
 
 })
@@ -89,7 +109,7 @@ const noAllegation = "No doping allegations";
 let legend = svg.append('g')
       .attr(
         "transform",
-        `translate(${innerWidth - 200}, ${innerHeight * 0.5})`
+        `translate(${innerWidth - 100}, ${innerHeight * 0.35})`
       ).attr("height", 200);
 
 [[red, allegation], [blue, noAllegation]].forEach(function(color, i) {
@@ -104,16 +124,6 @@ let legend = svg.append('g')
         .style("font-size", '12px').style("font-family", "Arial")
 });
 
-
 //tooltip
-// section.append("div")
-//       .attr('class', 'tip')
-//
-// svg.append("circle")
-//     .attr("x", 500).attr("y", 200).attr('r', 10)
-
-console.log(gCircles.selectAll("circle"));
-
-// circles.on("mouseover", function(event) {
-//   console.log("Hello")
-// })
+section.append("p")
+      .attr('class', 'tooltip')
